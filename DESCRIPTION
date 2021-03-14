@@ -1,0 +1,14 @@
+Package: planetapi
+Title: Planet Labs API
+Version: 0.1
+Authors@R: 
+    person(given = "Roger",
+           family = "Peng",
+           role = c("aut", "cre"),
+           email = "rdpeng@gmail.com")
+Description: Functions for accessing the Planet Labs API to search and order satellite image data.
+License: GPL-3
+Encoding: UTF-8
+LazyData: true
+Roxygen: list(markdown = TRUE)
+RoxygenNote: 7.1.1
