@@ -12,6 +12,7 @@ searchurl <- "https://api.planet.com/data/v1"
 #' Get Planet API Key Authorization
 #'
 #' @importFrom httr authenticate
+#' @export
 #'
 get_auth <- function() {
         key <-  Sys.getenv("PLANET_API_KEY")
