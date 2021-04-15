@@ -4,14 +4,14 @@
 \alias{plnt_plot_visual}
 \title{Plot Visual Image}
 \usage{
-plnt_plot_visual(x, pch = 15, ...)
+plnt_plot_visual(x, ...)
 }
 \arguments{
 \item{x}{a GDAL object}
 
-\item{pch}{pch for plot (default 15)}
-
 \item{...}{other parameters passed to \code{plot}}
+
+\item{pch}{pch for plot (default 15)}
 }
 \description{
 Combine values in red (band3), green (band2), and blue (band1) channels to create a "color" image

@@ -151,16 +151,22 @@ plnt_order <- function(ord) {
 #'
 #' @description Combine values in red (band3), green (band2), and blue (band1) channels to create a "color" image
 #'
+#' @import ggplot2
 #' @export
 #'
-plnt_plot_visual <- function(x, pch = 15, ...) {
+plnt_plot_visual <- function(x, ...) {
         col <- with(x@data, rgb(band1, band2, band3, maxColorValue = 255))
         dxy <- x@grid@cells.dim
         gr <- expand.grid(x = 1:dxy[1], y = dxy[2]:1)
         gr$col <- col
-        with(gr, plot(x, y, col = col, pch = pch,
-                      asp = 1, ...))
+        gr %>%
+                ggplot(aes(x, y)) +
+                geom_raster(fill = col) +
+                coord_fixed() +
+                theme_bw()
 }
+
+
 
 #' Download Zip Bundle
 #'
