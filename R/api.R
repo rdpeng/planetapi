@@ -141,33 +141,6 @@ plnt_order <- function(ord) {
 }
 
 
-#' Plot Visual Image
-#'
-#' Plot a Visual Satellite Image
-#'
-#' @param x a GDAL object
-#' @param pch pch for plot (default 15)
-#' @param ... other parameters passed to \code{plot}
-#'
-#' @description Combine values in red (band3), green (band2), and blue (band1) channels to create a "color" image
-#'
-#' @import ggplot2
-#' @export
-#'
-plnt_plot_visual <- function(x, ...) {
-        col <- with(x@data, rgb(band1, band2, band3, maxColorValue = 255))
-        dxy <- x@grid@cells.dim
-        gr <- expand.grid(x = 1:dxy[1], y = dxy[2]:1)
-        gr$col <- col
-        gr %>%
-                ggplot(aes(x, y)) +
-                geom_raster(fill = col) +
-                coord_fixed() +
-                theme_bw()
-}
-
-
-
 #' Download Zip Bundle
 #'
 #' Download files associated with an order ID
@@ -192,39 +165,6 @@ download_order <- function(order_id, ddir = "data") {
         download.file(out$`_links`$results$location[i], destfile)
         invisible(destfile)
 }
-
-normalize_band <- function(x, max_value = 255) {
-        x <- (x - min(x, na.rm = TRUE)) / max(x, na.rm = TRUE)
-        x <- x * max_value
-        x[is.na(x)] <- 0
-        x
-}
-
-#' Plot Image
-#'
-#' Plot Any Satellite Image via RGB
-#'
-#' @param x a GDAL object
-#' @param pch pch for plot (default 15)
-#' @param ... other parameters passed to \code{plot}
-#'
-#' @description Normalize color bands in RGB and then combine values in red (band3), green (band2), and blue (band1) channels to create a "color" image
-#'
-#' @export
-#'
-plnt_plot_any <- function(x, pch = 15, ...) {
-        x@data$band3 <- normalize_band(x@data$band3)
-        x@data$band2 <- normalize_band(x@data$band2)
-        x@data$band1 <- normalize_band(x@data$band1)
-        col <- with(x@data, rgb(band3, band2, band1, maxColorValue = 255))
-        dxy <- x@grid@cells.dim
-        gr <- expand.grid(x = 1:dxy[1], y = dxy[2]:1)
-        gr$col <- col
-        with(gr, plot(x, y, col = col, pch = pch,
-                      asp = 1, ...))
-}
-
-
 
 
 
