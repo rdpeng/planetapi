@@ -4,13 +4,13 @@
 \alias{plnt_search}
 \title{Search Planet API}
 \usage{
-plnt_search(details_json)
+plnt_search(searchq)
 }
 \arguments{
-\item{details_json}{path to JSON file containing the details of the search, such as filters}
+\item{searchq}{Search query represented as an R object}
 }
 \value{
-A list containing the search results
+An object containing the search results
 }
 \description{
 Post a search query to the Planet Labs API

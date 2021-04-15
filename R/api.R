@@ -6,6 +6,17 @@ orderurl <- "https://api.planet.com/compute/ops/orders/v2"
 ## Search API
 searchurl <- "https://api.planet.com/data/v1"
 
+#' Pretty Print JSON
+#'
+#' Print JSON for a query nicely
+#'
+#' @param x R object to be converted to JSON
+#' @importFrom jsonlite toJSON
+#' @export
+jsonit <- function(x, ...) {
+        toJSON(x, pretty = TRUE, auto_unbox = TRUE)
+}
+
 
 #' Get API Authorization
 #'
@@ -44,74 +55,89 @@ plnt_quota <- function() {
 }
 
 
-
-#' Build Search Query
-#'
-#' Create JSON for search query
-asset_filter <- function(asset_type) {
-        list(type = "AssetFilter",
-             config = as.list(asset_type))
-}
-
-date_range_filter <- function(start, end) {
-        list(type = "DateRangeFilter",
-             field_name = "acquired",
-             config = list(
-                     gte = paste0(start, "T00:00:00.000Z"),
-                     lte = paste0(end, "T00:00:00.000Z")
-             ))
-}
-
-geometry_filter <- function(aoi_geojson) {
-        json <- read_json(aoi_geojson)
-        list(type = "GeometryFilter",
-             field_name = "geometry",
-             config = json$features[[1]]$geometry)
-}
-
 #' Search Planet API
 #'
 #' Post a search query to the Planet Labs API
 #'
-#' @param details_json path to JSON file containing the details of the search, such as filters
+#' @param searchq Search query represented as an R object
 #'
-#' @return A list containing the search results
+#' @return An object containing the search results
 #'
 #' @importFrom httr POST upload_file
 #' @importFrom utils URLencode
+#' @importFrom jsonlite fromJSON write_json
+#' @export
+#'
+plnt_search <- function(searchq) {
+        auth <- get_auth()
+
+        ## Write it out
+        searchJSONfile <- paste(tempfile(), "json", sep = ".")
+        write_json(searchq, searchJSONfile,
+                   auto_unbox = TRUE, pretty = TRUE)
+
+        ## Search
+        search_string <- file.path(searchurl,
+                                   URLencode(paste0("quick-search",
+                                                    "?_sort=acquired asc")))
+        POST(search_string,
+             auth,
+             body = upload_file(searchJSONfile))
+}
+
+#' Get All IDs from Search
+#'
+#' Follow _next URLs to get all IDs when spread across pages
+#'
+#' @param Result from search query
+#'
+#' @returns a character vector of IDs
+#'
+#' @importFrom httr GET
 #' @importFrom jsonlite fromJSON
 #' @export
 #'
-plnt_search <- function(details_json) {
+get_all_ids <- function(r) {
         auth <- get_auth()
-        search_string <- file.path(searchurl,
-                                   URLencode(paste0("quick-search",
-                                                    "?_sort=acquired asc",
-                                                    "&_page_size=50")))
-        r <- POST(search_string,
-                  auth,
-                  body = upload_file(details_json))
-        fromJSON(as.character(r))
+        result <- suppressMessages(fromJSON(as.character(r)))
+        idlist <- list()
+        i <- 1
+        nextlink <- result$`_links`$`_next`
+        while(!is.null(nextlink)) {
+                idlist[[i]] <- result$features$id
+                r <- GET(nextlink, auth)
+                result <- suppressMessages(fromJSON(as.character(r)))
+                nextlink <- result$`_links`$`_next`
+                i <- i + 1
+        }
+        unlist(idlist, use.names = FALSE)
 }
+
+
 
 
 #' Order Planet API
 #'
 #' Post an order query to the Planet Labs API
 #'
-#' @param details_json path to JSON file containing the details of the order, such as filters, delivery, or notifications
+#' @param ord R object containing the details of the order, such as filters, delivery, or notifications
 #'
 #' @return A list containing the order results
 #'
 #' @importFrom httr POST upload_file
+#' @importFrom jsonlite write_json
 #' @export
 #'
-plnt_order <- function(details_json) {
+plnt_order <- function(ord) {
         auth <- get_auth()
-        r <- POST(orderurl,
-                  auth,
-                  body = upload_file(details_json))
-        r
+        orderJSONfile <- paste(tempfile(), "json", sep = ".")
+        write_json(ord, orderJSONfile,
+                   pretty = TRUE, auto_unbox = TRUE)
+
+        POST(orderurl,
+             auth,
+             body = upload_file(orderJSONfile)
+        )
 }
 
 
@@ -128,7 +154,7 @@ plnt_order <- function(details_json) {
 #' @export
 #'
 plnt_plot_visual <- function(x, pch = 15, ...) {
-        col <- with(x@data, rgb(band3, band2, band1, maxColorValue = 255))
+        col <- with(x@data, rgb(band1, band2, band3, maxColorValue = 255))
         dxy <- x@grid@cells.dim
         gr <- expand.grid(x = 1:dxy[1], y = dxy[2]:1)
         gr$col <- col
@@ -168,6 +194,88 @@ plnt_plot_any <- function(x, pch = 15, ...) {
                       asp = 1, ...))
 }
 
+
+
+
+
+#' Compute AOI Size
+#'
+#' Check the size of an AOi in km^2
+#'
+#' @param jsonfile path to geojson file
+#'
+#' @return 'units' object with area in km^2
+#'
+#' @export
+#' @importFrom sf read_sf st_area
+#' @import units
+#'
+aoi_size <- function(jsonfile) {
+        aoi <- read_sf(jsonfile, quiet = TRUE)
+        area <- st_area(aoi)
+        units(area) <- make_units(km^2)
+        area
+}
+
+
+#' Check All Orders
+#'
+#' Get a table of all orders made
+#'
+#' @return a data frame of orders containing the time created, order ID, state, and name
+#' @export
+#' @import tibble
+#' @import dplyr
+#' @importFrom httr GET
+#' @importFrom lubridate ymd_hms
+#' @importFrom jsonlite fromJSON
+#'
+check_orders <- function() {
+        auth <- get_auth()
+        r <- GET(orderurl, auth)
+        response <- suppressMessages(fromJSON(as.character(r)))
+        with(response$orders, tibble(created = created_on,
+                                     id = id,
+                                     state = state,
+                                     name = name)) %>%
+                mutate(created = ymd_hms(created)) %>%
+                arrange(desc(created))
+}
+
+
+#' Check Status of an Order
+#'
+#' Return the status information for an order ID
+#'
+#' @param order_id Order ID
+#' @param silent should status summary be printed?
+#'
+#' @import dplyr
+#' @import tibble
+#' @importFrom tidyr pivot_longer
+#' @importFrom httr GET
+#' @importFrom jsonlite fromJSON
+#' @export
+#'
+plnt_status <- function(order_id, silent = FALSE) {
+        auth <- get_auth()
+        status <- GET(paste(orderurl, order_id, sep = "/"), auth)
+        out <- suppressMessages({
+                status %>%
+                        as.character() %>%
+                        fromJSON()
+        })
+        showvars <- c("name", "created_on", "last_message", "state")
+        if(all(showvars %in% names(out))
+           && !silent) {
+                summary <- out[showvars] %>%
+                        as_tibble() %>%
+                        rename(order_name = name) %>%
+                        pivot_longer(everything())
+                print(summary)
+        }
+        invisible(out)
+}
 
 
 

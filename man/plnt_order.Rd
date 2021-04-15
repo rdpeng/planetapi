@@ -4,10 +4,10 @@
 \alias{plnt_order}
 \title{Order Planet API}
 \usage{
-plnt_order(details_json)
+plnt_order(ord)
 }
 \arguments{
-\item{details_json}{path to JSON file containing the details of the order, such as filters, delivery, or notifications}
+\item{ord}{R object containing the details of the order, such as filters, delivery, or notifications}
 }
 \value{
 A list containing the order results
