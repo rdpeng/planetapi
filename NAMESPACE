@@ -2,6 +2,7 @@
 
 export(aoi_size)
 export(check_orders)
+export(download_order)
 export(get_all_ids)
 export(get_auth)
 export(jsonit)
@@ -26,3 +27,4 @@ importFrom(sf,read_sf)
 importFrom(sf,st_area)
 importFrom(tidyr,pivot_longer)
 importFrom(utils,URLencode)
+importFrom(utils,download.file)

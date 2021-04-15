@@ -49,7 +49,7 @@ plnt_quota <- function() {
         auth <- get_auth()
         r <- GET("https://api.planet.com/auth/v1/experimental/public/my/subscriptions",
                  auth)
-        d <- fromJSON(as.character(r))
+        d <- suppressMessages(fromJSON(as.character(r)))
         d$pct_used <- with(d, round(100 * quota_used / quota_sqkm, 1))
         d[, c("quota_used", "quota_sqkm", "pct_used")]
 }
@@ -162,6 +162,30 @@ plnt_plot_visual <- function(x, pch = 15, ...) {
                       asp = 1, ...))
 }
 
+#' Download Zip Bundle
+#'
+#' Download files associated with an order ID
+#'
+#' @param order_id the Planet order ID
+#' @param ddir directory into which file should be downloaded
+#'
+#' @export
+#' @importFrom utils download.file
+#'
+download_order <- function(order_id, ddir = "data") {
+        out <- plnt_status(order_id, silent = TRUE)
+        if(out$state != "success")
+                stop("cannot download order; order state: ", out$state)
+        nms <- basename(out$`_links`$results$name)
+        i <- grep("manifest.json", nms, fixed = TRUE, invert = TRUE)
+        if(length(i) > 1) {
+                cat(nms[i], sep = "\n")
+                stop("more than one file to download")
+        }
+        destfile <- file.path(ddir, nms[i])
+        download.file(out$`_links`$results$location[i], destfile)
+        invisible(destfile)
+}
 
 normalize_band <- function(x, max_value = 255) {
         x <- (x - min(x, na.rm = TRUE)) / max(x, na.rm = TRUE)
