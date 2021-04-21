@@ -6,6 +6,9 @@ orderurl <- "https://api.planet.com/compute/ops/orders/v2"
 ## Search API
 searchurl <- "https://api.planet.com/data/v1"
 
+## Check subscription/quota
+subscription_url <- "https://api.planet.com/auth/v1/experimental/public/my/subscriptions"
+
 #' Pretty Print JSON
 #'
 #' Print JSON for a query nicely
@@ -28,7 +31,7 @@ jsonit <- function(x) {
 get_auth <- function() {
         key <-  Sys.getenv("PLANET_API_KEY")
         if(!nzchar(key)) {
-                stop("key is length 0; make sure to set your API key as an environment variable")
+                stop("key is length 0; make sure to set your API key as an environment variable named PLANET_API_KEY")
         }
         authenticate(key, "")
 }
@@ -47,8 +50,7 @@ get_auth <- function() {
 #'
 plnt_quota <- function() {
         auth <- get_auth()
-        r <- GET("https://api.planet.com/auth/v1/experimental/public/my/subscriptions",
-                 auth)
+        r <- GET(subscription_url, auth)
         d <- suppressMessages(fromJSON(as.character(r)))
         d$pct_used <- with(d, round(100 * quota_used / quota_sqkm, 1))
         d[, c("quota_used", "quota_sqkm", "pct_used")]
