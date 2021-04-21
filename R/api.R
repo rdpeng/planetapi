@@ -13,7 +13,7 @@ searchurl <- "https://api.planet.com/data/v1"
 #' @param x R object to be converted to JSON
 #' @importFrom jsonlite toJSON
 #' @export
-jsonit <- function(x, ...) {
+jsonit <- function(x) {
         toJSON(x, pretty = TRUE, auto_unbox = TRUE)
 }
 
@@ -89,7 +89,7 @@ plnt_search <- function(searchq) {
 #'
 #' Follow _next URLs to get all IDs when spread across pages
 #'
-#' @param Result from search query
+#' @param r Result from search query
 #'
 #' @returns a character vector of IDs
 #'

@@ -6,15 +6,13 @@
 #' Plot a Visual Satellite Image
 #'
 #' @param x a GDAL object
-#' @param pch pch for plot (default 15)
-#' @param ... other parameters passed to \code{plot}
 #'
 #' @description Combine values in red (band3), green (band2), and blue (band1) channels to create a "color" image
 #'
 #' @import ggplot2
 #' @export
 #'
-plnt_plot_visual <- function(x, ...) {
+plnt_plot_visual <- function(x) {
         col <- with(x@data, rgb(band1, band2, band3, maxColorValue = 255))
         dxy <- x@grid@cells.dim
         gr <- expand.grid(x = 1:dxy[1], y = dxy[2]:1)
@@ -27,7 +25,7 @@ plnt_plot_visual <- function(x, ...) {
 }
 
 
-
+#' @importFrom stats sd plogis
 normalize_band <- function(x, mult = 1, shift = 0, max_value = 255) {
         mx <- mean(x, na.rm = TRUE) - shift
         scale <- sd(x, na.rm = TRUE) * mult
@@ -43,6 +41,7 @@ normalize_band <- function(x, mult = 1, shift = 0, max_value = 255) {
 #'
 #' @param x a GDAL object
 #' @param mult scale factor for normalizing color bands
+#' @param shift shift factor for normalizing color bands
 #'
 #' @description Normalize color bands in RGB and then combine values in red (band3), green (band2), and blue (band1) channels to create a "color" image
 #'

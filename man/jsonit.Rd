@@ -4,7 +4,7 @@
 \alias{jsonit}
 \title{Pretty Print JSON}
 \usage{
-jsonit(x, ...)
+jsonit(x)
 }
 \arguments{
 \item{x}{R object to be converted to JSON}

@@ -7,7 +7,7 @@
 get_all_ids(r)
 }
 \arguments{
-\item{Result}{from search query}
+\item{r}{Result from search query}
 }
 \value{
 a character vector of IDs

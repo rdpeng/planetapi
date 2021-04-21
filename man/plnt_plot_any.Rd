@@ -10,6 +10,8 @@ plnt_plot_any(x, mult = 1, shift = 0)
 \item{x}{a GDAL object}
 
 \item{mult}{scale factor for normalizing color bands}
+
+\item{shift}{shift factor for normalizing color bands}
 }
 \description{
 Normalize color bands in RGB and then combine values in red (band3), green (band2), and blue (band1) channels to create a "color" image
