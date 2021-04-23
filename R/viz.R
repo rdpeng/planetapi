@@ -21,7 +21,7 @@ plnt_plot_visual <- function(x) {
                 ggplot(aes(x, y)) +
                 geom_raster(fill = col) +
                 coord_fixed() +
-                theme_bw()
+                theme_void()
 }
 
 
@@ -59,7 +59,7 @@ plnt_plot_any <- function(x, mult = 1, shift = 0) {
                 ggplot(aes(x, y)) +
                 geom_raster(fill = col) +
                 coord_fixed() +
-                theme_bw()
+                theme_void()
 }
 
 
