@@ -10,5 +10,5 @@ check_orders()
 a data frame of orders containing the time created, order ID, state, and name
 }
 \description{
-Get a table of all orders made
+Get a table of the most recent orders made
 }

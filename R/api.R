@@ -192,7 +192,7 @@ aoi_size <- function(jsonfile) {
 
 #' Check All Orders
 #'
-#' Get a table of all orders made
+#' Get a table of the most recent orders made
 #'
 #' @return a data frame of orders containing the time created, order ID, state, and name
 #' @export
@@ -206,14 +206,15 @@ check_orders <- function() {
         auth <- get_auth()
         r <- GET(orderurl, auth)
         response <- suppressMessages(fromJSON(as.character(r)))
-        with(response$orders, tibble(created = created_on,
-                                     id = id,
-                                     state = state,
-                                     name = name)) %>%
+        with(response$orders, {
+                tibble(created = created_on,
+                       id = id,
+                       state = state,
+                       name = name)
+        }) %>%
                 mutate(created = ymd_hms(created)) %>%
                 arrange(desc(created))
 }
-
 
 #' Check Status of an Order
 #'
