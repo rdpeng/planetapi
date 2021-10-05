@@ -4,7 +4,7 @@
 \alias{check_orders}
 \title{Check All Orders}
 \usage{
-check_orders()
+check_orders(n = 20L)
 }
 \value{
 a data frame of orders containing the time created, order ID, state, and name

@@ -202,11 +202,14 @@ aoi_size <- function(jsonfile) {
 #' @importFrom lubridate ymd_hms
 #' @importFrom jsonlite fromJSON
 #'
-check_orders <- function() {
+check_orders <- function(n = 20L) {
+        n <- as.integer(n)
+        if(n > 20)
+                stop("n must be <= 20")
         auth <- get_auth()
         r <- GET(orderurl, auth)
         response <- suppressMessages(fromJSON(as.character(r)))
-        with(response$orders, {
+        out <- with(response$orders, {
                 tibble(created = created_on,
                        id = id,
                        state = state,
@@ -214,6 +217,7 @@ check_orders <- function() {
         }) %>%
                 mutate(created = ymd_hms(created)) %>%
                 arrange(desc(created))
+        head(out, n)
 }
 
 #' Check Status of an Order
